@@ -2,6 +2,7 @@
 
 ```bash
 npm install web3@0.19
+npm install ethereumjs-tx
 ```
 
 # How to Use
