@@ -7,6 +7,11 @@ npm install ethereumjs-tx
 
 # How to Use
 
+## Start Geth
+```bash
+> build/bin/geth --datadir ./mydata/ --networkid 950327 --rpc --rpccorsdomain="*" --nodiscover console
+```
+
 ## Make JSON File
 ```bash
 > echo "`~/Desktop/solidity-breakdown/solidity/build/solc/solc --combined-json abi,bin,interface solexam/realEthash.sol`" > solexam/realEthash.js
