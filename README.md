@@ -14,7 +14,7 @@ npm install web3@0.19
 ## Make JSON File
 ```bash
 > cd solexam
-> ~/Desktop/solidity-breakdown/solidity/build/solc/solc realEthash.sol --combined-json abi,asm,ast,bin,bin-runtime,devdoc,interface,opcodes,srcmap,srcmap-runtime,userdoc > contracts.json
+> ~/Desktop/solidity_0.5.1/build/solc/solc realEthash.sol --combined-json abi,asm,ast,bin,bin-runtime,devdoc,interface,opcodes,srcmap,srcmap-runtime,userdoc > contracts.json
 ```
 
 ## Start Web3.js
