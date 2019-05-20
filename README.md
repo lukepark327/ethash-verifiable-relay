@@ -17,6 +17,12 @@ npm install web3@0.19
 > solc realEthash.sol --combined-json abi,asm,ast,bin,bin-runtime,devdoc,interface,opcodes,srcmap,srcmap-runtime,userdoc > contracts.json
 ```
 
+## Make ABI File
+```bash
+> cd solexam
+> solc realEthash.sol --abi > abi.json
+```
+
 ## Start Web3.js
 ```
 > npm start
