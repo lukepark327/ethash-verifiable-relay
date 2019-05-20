@@ -1,3 +1,7 @@
+# Relay
+* naive PoW.
+* Verification of ETHASH with a new OPCODE.
+
 # Install
 
 ```bash
