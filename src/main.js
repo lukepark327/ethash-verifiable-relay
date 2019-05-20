@@ -55,7 +55,8 @@ async function waitBlock(contract, sleepTime) {
     let receipt = web3.eth.getTransactionReceipt(contract.transactionHash);
     if (receipt && receipt.contractAddress) {
       console.log("Contract Address: \"" + receipt.contractAddress + "\"");
-      break;
+      
+      return receipt.contractAddress;
     }
     console.log("Waiting a mined block to include your contract... latest block is " + web3.eth.blockNumber);
     await sleep(sleepTime);
@@ -72,11 +73,14 @@ unlockAccount(
   "12341234" // password
 );
 
-var contract = createContract(
+const contract = createContract(
   "./solexam/contracts.json", // jsonFileLoca
   "contracts", // jsonFileName
   "realEthash.sol", // solidityName
   "realEthash" // contractName
 );
 
-waitBlock(contract, 4000);
+waitBlock(contract, 4000).then(function(contractAddress) {
+  let result = web3.eth.getStorageAt(contractAddress, 5);
+  console.log(result);
+});
