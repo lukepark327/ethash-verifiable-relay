@@ -8,7 +8,7 @@ npm install web3@0.19
 
 ## Start Geth
 ```bash
-> build/bin/geth --datadir ./mydata/ --networkid 950327 --rpc --rpccorsdomain="*" --rpcapi="db,eth,net,web3,personal,web3" --nodiscover console
+> build/bin/geth --datadir ./mydata/ --networkid 950327 --port 32222 --rpc --rpccorsdomain="*" --rpcport 8222 --rpcapi="db,eth,net,web3,personal,web3" --nodiscover console
 ```
 
 ## Make JSON File
