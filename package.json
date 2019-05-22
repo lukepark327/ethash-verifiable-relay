@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "ethereumjs-tx": "^1.3.7",
-    "web3": "^0.20.7"
+    "bn.js": "^4.11.8",
+    "ethereumjs-block": "^2.2.0",
+    "rlp": "^2.2.3",
+    "web3": "^0.20.7",
+    "web3-utils": "^1.0.0-beta.55"
   },
   "devDependencies": {},
   "scripts": {
