@@ -13,7 +13,7 @@ Decode this:
 
 which is RLP encoding about:
 
-```Json
+```
 {
   difficulty: '0x211ac',
   extraData: '0xd88301080c846765746887676f312e392e378664617277696e',
@@ -77,3 +77,4 @@ contract SomeContract {
 with the above RLP encoded string.
 
 * ls[0] is parentHash
+* TBA
