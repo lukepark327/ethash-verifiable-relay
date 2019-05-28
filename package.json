@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "bn.js": "^4.11.8",
+    "eth-proof": "^2.1.2",
     "ethereumjs-block": "^2.2.0",
     "rlp": "^2.2.3",
     "web3": "^0.20.7",

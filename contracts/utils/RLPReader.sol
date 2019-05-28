@@ -262,4 +262,14 @@ library RLPReader {
             mstore(dest, or(destpart, srcpart))
         }
     }
+    
+    /// @dev Decode an RLPItem into a bytes32. This will not work if the
+    /// RLPItem is a list.
+    /// @param self The RLPItem.
+    /// @return The decoded string.
+    function toBytes32(RLPItem memory self)
+    internal pure
+    returns (bytes32 data) {
+        return bytes32(toUint(self));
+    }
 }
