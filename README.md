@@ -36,7 +36,7 @@ type Header struct {
 
 * Skip `logsBloom` is DATA, 256 Bytes, the bloom filter for the logs of the block. null when its pending block.
 	* Logs: the set of logs entries created upon transaction execution.
-	* The bloom filter: it is created based on the information found int he logs. Logs entries are reduced are reduced to 256 bytes hashes, which are embedded in the block header as the logs bloom.[2]
+	* The bloom filter: it is created based on the information found int he logs. Logs entries are reduced are reduced to 256 bytes hashes, which are embedded in the block header as the logs bloom.[[2]](https://github.com/twodude/eth-proof-sol)
 
 # Ethereum Block Header Verification
 Refer Geth's `consensus.go` file.
@@ -270,7 +270,7 @@ digest, result := HashimotoLight(size, cache.cache, header.HashNoNonce().Bytes()
 
 ### Check `digest` is valid.
 
-Mixhash is actually calculated from nonce as intermediate value when validating PoW with Hashimoto algorithm. But this calculation is still pretty heavy and a node might be DDoSed by blocks with incorrect nonces. mixhash is included into block to perform lightweight PoW 'pre-validation' to avoid such attack, as generating a correct mixhash still requires at least some work for attacker[1].
+Mixhash is actually calculated from nonce as intermediate value when validating PoW with Hashimoto algorithm. But this calculation is still pretty heavy and a node might be DDoSed by blocks with incorrect nonces. mixhash is included into block to perform lightweight PoW 'pre-validation' to avoid such attack, as generating a correct mixhash still requires at least some work for attacker[[1]](https://github.com/twodude/eth-proof-sol).
 
 ```go
 if !bytes.Equal(header.MixDigest[:], digest) {
