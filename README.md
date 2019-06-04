@@ -1,3 +1,43 @@
+# Ethereum Block Header 
+
+See [RLPdecoding.md](https://github.com/twodude/eth-proof-sol/blob/master/docs/RLPdecoding.md) and [calBlockHash.md](https://github.com/twodude/geth-breakdown/blob/master/docs/naivePow/calBlockHash.md)
+
+## Block Header
+
+Header represents a block header in the Ethereum blockchain.
+
+```go
+type Header struct {
+	ParentHash  common.Hash    `json:"parentHash"       gencodec:"required"`
+	UncleHash   common.Hash    `json:"sha3Uncles"       gencodec:"required"`
+	Coinbase    common.Address `json:"miner"            gencodec:"required"`
+	Root        common.Hash    `json:"stateRoot"        gencodec:"required"`
+	TxHash      common.Hash    `json:"transactionsRoot" gencodec:"required"`
+	ReceiptHash common.Hash    `json:"receiptsRoot"     gencodec:"required"`
+	Bloom       Bloom          `json:"logsBloom"        gencodec:"required"`
+	Difficulty  *big.Int       `json:"difficulty"       gencodec:"required"`
+	Number      *big.Int       `json:"number"           gencodec:"required"`
+	GasLimit    uint64         `json:"gasLimit"         gencodec:"required"`
+	GasUsed     uint64         `json:"gasUsed"          gencodec:"required"`
+	Time        *big.Int       `json:"timestamp"        gencodec:"required"`
+	Extra       []byte         `json:"extraData"        gencodec:"required"`
+	MixDigest   common.Hash    `json:"mixHash"          gencodec:"required"`
+	Nonce       BlockNonce     `json:"nonce"            gencodec:"required"`
+}
+```
+
+* We can check a `Coinbase` transaction validation via merkleproof. 
+
+* Skip checking `UncleHash` validation?
+Theretofore, is it possible to save all uncle blocks in a contract?
+
+* Skip `Root` and `ReceiptHash` validation?
+We can do those things... But is it necessary?
+
+* Skip `logsBloom` is DATA, 256 Bytes, the bloom filter for the logs of the block. null when its pending block.
+	* Logs: the set of logs entries created upon transaction execution.
+	* The bloom filter: it is created based on the information found int he logs. Logs entries are reduced are reduced to 256 bytes hashes, which are embedded in the block header as the logs bloom.[2]
+
 # Ethereum Block Header Verification
 Watch Geth's `consensus.go` file.
 
@@ -260,3 +300,4 @@ if new(big.Int).SetBytes(result).Cmp(target) > 0 {
 
 # References
 [1] https://ethereum.stackexchange.com/questions/5833/why-do-we-need-both-nonce-and-mixhash-values-in-a-block   
+[2] https://delegatecall.com/questions/what-are-the-elements-of-a-transaction-receipt-in-ethereum-e8b59e51-f535-455e-9841-358b14c40107   
