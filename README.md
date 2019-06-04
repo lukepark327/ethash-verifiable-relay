@@ -39,7 +39,7 @@ type Header struct {
 	* The bloom filter: it is created based on the information found int he logs. Logs entries are reduced are reduced to 256 bytes hashes, which are embedded in the block header as the logs bloom.[2]
 
 # Ethereum Block Header Verification
-Watch Geth's `consensus.go` file.
+Refer Geth's `consensus.go` file.
 
 # VerifyHeader
 `VerifyHeader` checks whether a header conforms to the consensus rules of the stock Ethereum ethash engine.
