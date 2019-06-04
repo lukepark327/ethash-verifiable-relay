@@ -298,6 +298,10 @@ if new(big.Int).SetBytes(result).Cmp(target) > 0 {
   * Keywords: relay, ethash, 2-way-peg, new opcode, modified merkle patricia trie proof, rlp
 -->
 
+# Verify Uncle Block
+
+Refer [VerifyUncle.md](https://github.com/twodude/eth-proof-sol/blob/master/docs/VerifyUncle.md)
+
 # References
 [1] https://ethereum.stackexchange.com/questions/5833/why-do-we-need-both-nonce-and-mixhash-values-in-a-block   
 [2] https://delegatecall.com/questions/what-are-the-elements-of-a-transaction-receipt-in-ethereum-e8b59e51-f535-455e-9841-358b14c40107   
