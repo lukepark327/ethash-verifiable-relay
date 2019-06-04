@@ -5,14 +5,14 @@ Watch Geth's `VerifySeal` function in `consensus.go`.
 
 ```go
 func (ethash *Ethash) VerifySeal(chain consensus.ChainReader, header *types.Header) error {
- ...
+	...
 }
 ```
 
 * Ensure that we have a valid difficulty for the block
 ```go
 if header.Difficulty.Sign() <= 0 {
- return errInvalidDifficulty
+	return errInvalidDifficulty
 }
 ```
 Sign returns
