@@ -26,15 +26,13 @@ type Header struct {
 }
 ```
 
-* We can check a `Coinbase` transaction validation via merkleproof. 
+* We can check a `Coinbase` transaction validation via merkleproof. But is it necessary?
 
 * Skip checking `UncleHash` validation?
-
-Theretofore, is it possible to save all uncle blocks in a contract?
+	* Theretofore, is it possible to save all uncle blocks in a contract?
 
 * Skip `Root` and `ReceiptHash` validation.
-
-We can do those things... But is it necessary?
+	* We can do those things... But is it necessary?
 
 * Skip `logsBloom` is DATA, 256 Bytes, the bloom filter for the logs of the block. null when its pending block.
 	* Logs: the set of logs entries created upon transaction execution.
@@ -270,7 +268,7 @@ size := datasetSize(number)
 digest, result := HashimotoLight(size, cache.cache, header.HashNoNonce().Bytes(), header.Nonce.Uint64())
 ```
 
-## Check `digest` is valid.
+### Check `digest` is valid.
 
 Mixhash is actually calculated from nonce as intermediate value when validating PoW with Hashimoto algorithm. But this calculation is still pretty heavy and a node might be DDoSed by blocks with incorrect nonces. mixhash is included into block to perform lightweight PoW 'pre-validation' to avoid such attack, as generating a correct mixhash still requires at least some work for attacker[1].
 
@@ -280,7 +278,7 @@ if !bytes.Equal(header.MixDigest[:], digest) {
 }
 ```
 
-## Check block difficulty is valid.
+### Check block difficulty is valid.
 
 ```go
 target := new(big.Int).Div(maxUint256, header.Difficulty)
