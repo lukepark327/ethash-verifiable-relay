@@ -29,9 +29,11 @@ type Header struct {
 * We can check a `Coinbase` transaction validation via merkleproof. 
 
 * Skip checking `UncleHash` validation?
+
 Theretofore, is it possible to save all uncle blocks in a contract?
 
-* Skip `Root` and `ReceiptHash` validation?
+* Skip `Root` and `ReceiptHash` validation.
+
 We can do those things... But is it necessary?
 
 * Skip `logsBloom` is DATA, 256 Bytes, the bloom filter for the logs of the block. null when its pending block.
