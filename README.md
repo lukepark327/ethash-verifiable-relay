@@ -224,7 +224,26 @@ func calcDifficultyByzantium(time uint64, parent *types.Header) *big.Int {
 
 * `expDiffPeriod = big.NewInt(100000)`
 
-* TODO: we need to see Constantinople rule...
+### In Constantinople Rule
+The difficulty is calculated with Byzantium rules. But there is a `bombDelay` feature.
+
+```go
+calcDifficultyConstantinople = makeDifficultyCalculator(big.NewInt(5000000))
+calcDifficultyByzantium = makeDifficultyCalculator(big.NewInt(3000000))
+```
+
+```go
+bombDelayFromParent := new(big.Int).Sub(bombDelay, big1)
+```
+
+```go
+// calculate a fake block number for the ice-age delay
+// Specification: https://eips.ethereum.org/EIPS/eip-1234
+fakeBlockNumber := new(big.Int)
+if parent.Number.Cmp(bombDelayFromParent) >= 0 {
+	fakeBlockNumber = fakeBlockNumber.Sub(parent.Number, bombDelayFromParent)
+}
+```
 
 ## Verify that the gas limit is <= 2^63-1
 
