@@ -7,10 +7,12 @@ const EthereumBlock = require('ethereumjs-block/from-rpc')
 
 let Web3 = require('web3'); // npm install web3@0.19
 let web3 = new Web3();
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8222'));
+// const provider = 'http://localhost:8222'
+const provider = 'https://ropsten.infura.io'
+web3.setProvider(new web3.providers.HttpProvider(provider));
 
 const { GetAndVerify, GetProof, VerifyProof } = require('eth-proof');
-let getProof = new GetProof("http://localhost:8222");
+let getProof = new GetProof("provider");
 
 // const { Account, Header, Log, Proof, Receipt, Transaction } = require('eth-object')
 const { keccak, encode, decode, toBuffer, toWord } = require('eth-util-lite')
@@ -38,8 +40,10 @@ async function getTxProofInfo(num, untrustedTxHash) {
 }
 
 // main
+// 3rd Tx in block(444)
 getTransactionProof(
-  "0x25d62673c0be981a8a0b88ea78f157510324b68085303af97740374de54e65a8"
+  // "0x25d62673c0be981a8a0b88ea78f157510324b68085303af97740374de54e65a8"
+  "0x8822ecc5c9cca1d9fe90f79a57e1d2a923b20bdb6888dde19a3deffae29f6cfd"
 ).then((res) => {
   let txProof = web3ify(res);
   console.log(txProof);

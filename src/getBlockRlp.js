@@ -3,7 +3,9 @@ let Web3 = require('web3'); // npm install web3@0.19
 
 // Create a web3 connection to a running geth node over JSON-RPC running at ~
 let web3 = new Web3();
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8222'));
+// const provider = 'http://localhost:8222'
+const provider = 'https://ropsten.infura.io'
+web3.setProvider(new web3.providers.HttpProvider(provider));
 
 // Get Block Hash
 // Calculate RLP Encoding
@@ -26,8 +28,9 @@ async function relay(num) {
     // console.log("> BN         :" + new BN(block.hash).toString());
     // console.log("> BlockHash  :" + block.hash.toString());
     // console.log("> PrevHash   :" + block.parentHash.toString());
-    console.log(block);
-    console.log("> RlpEncoding:" + rlped);
+    // console.log(block);
+    console.log("> Block Hash : \"" + block['hash'] + "\"");
+    console.log("> RlpEncoding: \"" + rlped + "\"");
     // console.log("> Keccak256  :" + utils.keccak256(rlped));
 
   } catch (e) {
@@ -43,4 +46,9 @@ async function relay(num) {
   }
 }
 
-relay(444);
+// relay(444);
+// relay(5700443);
+// relay(5700444);
+// relay(5700445);
+relay(5700446); // one uncles
+relay(1233456); // two uncles
