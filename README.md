@@ -27,6 +27,8 @@ type Header struct {
 ```
 
 * We can check a `Coinbase` transaction validation via merkleproof. But is it necessary?
+	* There are no tx about coinbase. See https://github.com/twodude/eth-proof-sol/blob/master/docs/Coinbase.md
+	* So you can't verify coinbase tx with block header only.
 
 * Skip checking `UncleHash` validation?
 	* Theretofore, is it possible to save all uncle blocks in a contract?
