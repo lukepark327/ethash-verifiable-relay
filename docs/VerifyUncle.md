@@ -1,3 +1,12 @@
+# Ethereum Block Header
+Ethereum Block Header contains result of uncle's rlpHash.
+See https://github.com/ethereum/go-ethereum/blob/master/core/types/block.go#L183
+
+If there are no uncles, Use `EmptyUncleHash`.
+```go
+EmptyUncleHash = rlpHash([]*Header(nil))
+```
+
 # Main Chain Selection Rule in Contract
 For solving (in fact, relieving) orphan block problem.
 To implement main chain selection rule, we need to enroll uncle blocks.
