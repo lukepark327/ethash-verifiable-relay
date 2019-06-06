@@ -173,14 +173,6 @@ contract Relay {
         return MerklePatriciaProof.verify(value, encodedPath, parentNodes, root);
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
     // TODO: Save verifying function in other contracts.
     
     // There are some values.
@@ -255,11 +247,21 @@ contract Relay {
             revert(); // invalid difficulty
         }
 
+        // Verify that the block number is parent's +1
+        int diff = int(header.blockNumber - parent.blockNumber);
+        if (diff != 1) {
+            revert(); // consensus.ErrInvalidNumber
+        }
+        
+        if (seal) {
+            if (!VerifySeal(header)) {
+                revert();
+            }
+        }
+
         return true;
     }
-    
-    
-    
+
     function CalcDifficulty(
         uint time,
         BlockHeader memory parent
@@ -311,4 +313,13 @@ contract Relay {
         return x;
     }
     
+    function VerifySeal(
+        BlockHeader memory header
+        ) internal view returns (bool) {
+        /*
+        * Main idea of verifying PoW
+        */
+        
+        return true;
+    }
 }
