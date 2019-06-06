@@ -33,6 +33,9 @@ contract Relay {
     
     bytes32 public genesisBlockHash;
 
+    event Err(string);
+    event Errorf(string, uint, int);
+
     // TODO: ownership
     constructor(
         bytes32             blockHash,
@@ -72,8 +75,8 @@ contract Relay {
         }
 
         // call VerifyHeader
-        // assert(VerifyHeader(blockHash, header, true));
-
+        assert(VerifyHeader(blockHash, header, true));
+        
         blocks[blockHash] = header;
     }
 
@@ -169,22 +172,37 @@ contract Relay {
     ) internal pure returns (bool) {
         return MerklePatriciaProof.verify(value, encodedPath, parentNodes, root);
     }
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // TODO: Save verifying function in other contracts.
-
+    
     // There are some values.
-    uint MaxBig256              = 2 ** 256 - 1;
+    uint    MaxBig256       = 2 ** 256 - 1;
     // uint allowedFutureBlockTime = 15 * 60;
     // uint maxUncles              = 2;
-    uint big1 = 1;
-    uint big2 = 2;
-    uint big9 = 9;
-
+    int     big1                    = 1;
+    int     big2                    = 2;
+    int     big9                    = 9;
+    bytes32 EmptyUncleHash          = 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347; // rlpHash([]*Header(nil))
+    int     bigMinus99              = -99;
+    int     DifficultyBoundDivisor  = 2048;
+    int     MinimumDifficulty       = 131072;
+    uint    bombDelay               = 5000000; // 3000000;
+    uint    bombDelayFromParent     = bombDelay - uint(big1);
+    uint    expDiffPeriod           = 100000;
 
     function VerifyHeader(
         bytes32 blockHash,
         BlockHeader memory header,
-        bool seal) internal view returns (bool) {
+        bool seal) internal view
+        returns (bool) {
         /*
         *
         */
@@ -193,8 +211,10 @@ contract Relay {
         }
         BlockHeader memory parent = blocks[header.parentHash];
         if (parent.parentHash == 0) {
+            // emit Err("consensus.ErrUnknownAncestor");
             revert(); // consensus.ErrUnknownAncestor
         }
+        
         return verifyHeader(header, parent, false, seal);
     }
 
@@ -202,7 +222,8 @@ contract Relay {
         BlockHeader memory header,
         BlockHeader memory parent,
         bool uncle,
-        bool seal) internal view returns (bool) {
+        bool seal) internal view
+        returns (bool) {
         /*
         *
         */
@@ -211,6 +232,7 @@ contract Relay {
         // Verify the header's timestamp
         if (uncle) {
             if (header.time > MaxBig256) {
+                // emit Err("errLargeBlockTime");
                 revert(); // errLargeBlockTime
             }
         }
@@ -219,34 +241,74 @@ contract Relay {
             // because relayer can upload past block header.
         }
         if (header.time <= parent.time) {
+            // emit Err("errZeroBlockTime");
             revert(); // errZeroBlockTime
         }
 
         // Verify the block's difficulty based in it's timestamp and parent's difficulty
-        uint expected = CalcDifficulty(header.time, parent);
-
-        // TBA
+        int expected = CalcDifficulty(header.time, parent);
+        
+        if (expected != int(header.difficulty)) {
+            // emit Errorf("invalid difficulty: have",
+            //             header.difficulty,
+            //             expected);
+            revert(); // invalid difficulty
+        }
 
         return true;
     }
-
+    
+    
+    
     function CalcDifficulty(
         uint time,
         BlockHeader memory parent
-        ) internal view returns (uint) {
+        ) internal view returns (int) {
         /*
         *
         */
         // Postulate Constantinople rule only.
         // calcDifficultyByzantium
-        uint bigTime = time;
-        uint bigParentTime = parent.time;
-
-        uint x = bigTime - bigParentTime;
+        int bigTime = int(time);
+        int bigParentTime = int(parent.time);
+        
+        int x = bigTime - bigParentTime;
         x = x / big9;
-
-        // if parent.uncleHash
-
+    
+        if (parent.uncleHash == EmptyUncleHash) {
+            x = big1 - x;
+        }
+        else {
+            x = big2 - x;
+        }
+        
+        if (x < bigMinus99) {
+            x = bigMinus99;
+        }
+    
+        int y = int(parent.difficulty) / DifficultyBoundDivisor;
+        x = y * x;
+        x = int(parent.difficulty) + x;
+        
+        if (x < MinimumDifficulty) {
+            x = MinimumDifficulty;
+        }
+        
+        uint fakeBlockNumber;
+        if (parent.blockNumber >= bombDelayFromParent) {
+            fakeBlockNumber = parent.blockNumber - bombDelayFromParent;
+        }
+        
+        uint periodCount = fakeBlockNumber;
+        periodCount = periodCount / expDiffPeriod;
+        
+        if (periodCount > uint(big1)) {
+            uint t = periodCount - uint(big2);
+            y = int(2 ** t);
+            x = x + y;
+        }
+        
+        return x;
     }
-
+    
 }
