@@ -47,8 +47,8 @@ async function relay(num) {
 }
 
 // relay(444);
-// relay(5700443);
-// relay(5700444);
-// relay(5700445);
-relay(5700446); // one uncles
-relay(1233456); // two uncles
+relay(5700443);
+relay(5700444);
+relay(5700445);
+// relay(5700446); // one uncles
+// relay(1233456); // two uncles

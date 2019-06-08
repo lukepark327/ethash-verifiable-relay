@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "./utils/RLPReader.sol";
-import "./utils/MerklePatriciaProof.sol";
+import "../utils/RLPReader.sol";
+import "../utils/MerklePatriciaProof.sol";
 
-contract Relay {
+contract RelayNaivePoW {
     /*
     *
     */
@@ -320,6 +320,73 @@ contract Relay {
         /*
         * Main idea of verifying PoW
         */
+
+        // Ensure that we have a valid difficulty for the block
+        if (header.difficulty <= 0) {
+            revert("errInvalidDifficulty");
+        }
+        
+        // Recompute the digest and PoW value and verify against the header
+        // naïve PoW
+        bytes32 hashNoNonce = header.MixDigest;
+        
+        bytes32 digest;
+        bytes32 result;
+        (digest, result) = naivePoW(hashNoNonce, header.nonce);
+        
+        if (header.MixDigest != digest) {
+            revert("errInvalidMixDigest");
+        }
+        bytes32 target = bytes32(MaxBig256 / header.difficulty);
+        if (result > target) {
+            revert("errInvalidPoW");
+        }
         return true;
+    }
+    
+    function naivePoW(
+        bytes32 hash,
+        uint    nonce
+        ) internal pure returns (bytes32, bytes32) {
+        /*  
+        *
+        */
+        bytes32 digest = hash;
+        
+    	// Combine header+nonce into a 64 byte seed
+        bytes memory seed = new bytes(72);
+        for (uint8 i=0; i<32; i++) {
+            seed[i] = digest[i];
+        }
+        
+        // binary.LittleEndian.PutUint64(seed[32:], nonce)
+        bytes memory nonceBytes = PutUint64(uint64(nonce));
+        
+        for (uint8 i=32; i<40; i++) {
+            seed[i] = nonceBytes[i-32];
+        }
+        for (uint8 i=40; i<72; i++) {
+            seed[i] = digest[i-40];
+        }
+        return (digest, keccak256(seed));
+    }
+    
+    function PutUint64(
+        uint64 v
+        ) internal pure returns (bytes memory) {
+        /*
+        *
+        */
+        bytes memory b = new bytes(8);
+    	b[0] = byte(uint8((v		) % 256));
+    	b[1] = byte(uint8((v >> 8	) % 256));
+    	b[2] = byte(uint8((v >> 16	) % 256));
+    	b[3] = byte(uint8((v >> 24	) % 256));
+    	b[4] = byte(uint8((v >> 32	) % 256));
+    	b[5] = byte(uint8((v >> 40	) % 256));
+    	b[6] = byte(uint8((v >> 48	) % 256));
+    	b[7] = byte(uint8((v >> 56	) % 256));
+    	
+    	return b;
     }
 }

@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "./utils/RLPReader.sol";
-import "./utils/MerklePatriciaProof.sol";
+import "../utils/RLPReader.sol";
+import "../utils/MerklePatriciaProof.sol";
 
-contract Relay {
+contract RelayNaivePoW {
     /*
     *
     */
@@ -320,6 +320,7 @@ contract Relay {
         /*
         * Main idea of verifying PoW
         */
+        // TODO: Ethash
         return true;
     }
 }
