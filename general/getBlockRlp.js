@@ -3,8 +3,9 @@ let Web3 = require('web3'); // npm install web3@0.19
 
 // Create a web3 connection to a running geth node over JSON-RPC running at ~
 let web3 = new Web3();
-// const provider = 'http://localhost:8222'
-const provider = 'https://ropsten.infura.io'
+// build/bin/geth --datadir ./mydata/ --networkid 950327 --port 32222 --rpc --rpccorsdomain="*" --rpcport 8222 --rpcapi="db,eth,net,web3,personal" --nodiscover console
+const provider = 'http://localhost:8222'
+// const provider = 'https://ropsten.infura.io'
 web3.setProvider(new web3.providers.HttpProvider(provider));
 
 // Get Block Hash
@@ -46,9 +47,9 @@ async function relay(num) {
   }
 }
 
-// relay(444);
-relay(5700443);
-relay(5700444);
-relay(5700445);
-// relay(5700446); // one uncles
-// relay(1233456); // two uncles
+// relay(5700446); // one uncles in testnet
+// relay(1233456); // two uncles in testnet
+relay(100);
+relay(101);
+relay(102);
+relay(103);
