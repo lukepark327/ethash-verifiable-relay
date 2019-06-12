@@ -9,7 +9,7 @@ let fs = require("fs");
 let Web3 = require("web3"); // npm install web3@0.19
 
 let web3 = new Web3();
-const provider = "http://147.46.116.57:8545" // testnet 
+const provider = "http://localhost:8545" // testnet 
 web3.setProvider(new web3.providers.HttpProvider(provider));
 
 function unlockAccount(address, password) {
