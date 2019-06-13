@@ -32,6 +32,8 @@ async function relay(num) {
     // console.log(block);
     console.log("> Block Hash : \"" + block['hash'] + "\"");
     console.log("> RlpEncoding: \"" + rlped + "\"");
+    console.log("> UncleHashes: \"" + block['uncles'] + "\"");
+    console.log();
     // console.log("> Keccak256  :" + utils.keccak256(rlped));
 
   } catch (e) {
@@ -49,7 +51,9 @@ async function relay(num) {
 
 // relay(5700446); // one uncles in testnet
 // relay(1233456); // two uncles in testnet
-relay(100);
-relay(101);
-relay(102);
-relay(103);
+// relay(100);
+// relay(101);
+// relay(102);
+// relay(103);
+// relay(104);
+relay(117);

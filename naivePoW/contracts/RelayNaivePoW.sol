@@ -26,19 +26,29 @@ contract RelayNaivePoW {
         // uint64   gasUsed;        // 10
         uint        time;           // 11
         // bytes    extra;          // 12
-        bytes32     MixDigest;      // 13
+        bytes32     mixDigest;      // 13
         uint        nonce;          // 14
     }
 
     mapping (bytes32 => BlockHeader) public blocks;
     mapping (bytes32 => bytes32[]) internal uncles;
 
-    bytes32 public genesisBlockHash;
+    // bytes32 public genesisBlockHash;
+    uint genesisBlockNumber;
+    uint highestBlockNumber;
+
+    function getGenesisBlockNumber() public view returns (uint) {
+        return genesisBlockNumber;
+    }
+
+    function getHighestBlockNumber() public view returns (uint) {
+        return highestBlockNumber;
+    }
 
     // TODO: ownership
     constructor(
         bytes32             blockHash,
-        bytes32[] memory    UncleBlockHashes,
+        bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
         *
@@ -47,17 +57,19 @@ contract RelayNaivePoW {
         BlockHeader memory header = parseBlockHeader(rlpHeader);
 
         blocks[blockHash] = header;
-        if (UncleBlockHashes.length != 0) {
-            uncles[header.uncleHash] = UncleBlockHashes;
+        if (uncleBlockHashes.length != 0) {
+            uncles[header.uncleHash] = uncleBlockHashes;
         }
 
-        genesisBlockHash = blockHash;
+        // genesisBlockHash = blockHash;
+        genesisBlockNumber = header.blockNumber;
+        highestBlockNumber = genesisBlockNumber;
     }
 
     function submitBlock(
         bytes32             blockHash,
         // bytes32             blockHashNoNonce,
-        bytes32[] memory    UncleBlockHashes,
+        bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
         *
@@ -68,19 +80,22 @@ contract RelayNaivePoW {
 
         BlockHeader memory header = parseBlockHeader(rlpHeader);
 
-        if (UncleBlockHashes.length != 0) {
+        if (uncleBlockHashes.length != 0) {
             // TODO: validation test of uncles
             // Require all uncles block header info.
             // Require hash validation check.
             // assert();
 
-            uncles[header.uncleHash] = UncleBlockHashes;
+            uncles[header.uncleHash] = uncleBlockHashes;
         }
 
         // call VerifyHeader
         assert(VerifyHeader(blockHash, header, true));
 
         blocks[blockHash] = header;
+        if (highestBlockNumber < header.blockNumber) {
+            highestBlockNumber = header.blockNumber;
+        }
     }
 
     // parse block header
@@ -107,7 +122,7 @@ contract RelayNaivePoW {
         // header.gasUsed      = uint64(ls[10].toUint());
         header.time         = ls[11].toUint();
         // header.extra        = ls[12].toBytes();
-        header.MixDigest    = ls[13].toBytes32();
+        header.mixDigest    = ls[13].toBytes32();
         header.nonce        = ls[14].toUint();
 
         return header;
@@ -325,16 +340,16 @@ contract RelayNaivePoW {
         if (header.difficulty <= 0) {
             revert("errInvalidDifficulty");
         }
-        
+
         // Recompute the digest and PoW value and verify against the header
         // naïve PoW
-        bytes32 hashNoNonce = header.MixDigest;
-        
+        bytes32 hashNoNonce = header.mixDigest;
+
         bytes32 digest;
         bytes32 result;
         (digest, result) = naivePoW(hashNoNonce, header.nonce);
-        
-        if (header.MixDigest != digest) {
+
+        if (header.mixDigest != digest) {
             revert("errInvalidMixDigest");
         }
         bytes32 target = bytes32(MaxBig256 / header.difficulty);
@@ -343,25 +358,25 @@ contract RelayNaivePoW {
         }
         return true;
     }
-    
+
     function naivePoW(
         bytes32 hash,
         uint    nonce
         ) internal pure returns (bytes32, bytes32) {
-        /*  
-        *
+        /*
+        * Modified Hashimoto algorithm; remove mix rounds.
         */
         bytes32 digest = hash;
-        
+
     	// Combine header+nonce into a 64 byte seed
         bytes memory seed = new bytes(72);
         for (uint8 i=0; i<32; i++) {
             seed[i] = digest[i];
         }
-        
+
         // binary.LittleEndian.PutUint64(seed[32:], nonce)
         bytes memory nonceBytes = PutUint64(uint64(nonce));
-        
+
         for (uint8 i=32; i<40; i++) {
             seed[i] = nonceBytes[i-32];
         }
@@ -370,7 +385,7 @@ contract RelayNaivePoW {
         }
         return (digest, keccak256(seed));
     }
-    
+
     function PutUint64(
         uint64 v
         ) internal pure returns (bytes memory) {
@@ -386,7 +401,7 @@ contract RelayNaivePoW {
     	b[5] = byte(uint8((v >> 40	) % 256));
     	b[6] = byte(uint8((v >> 48	) % 256));
     	b[7] = byte(uint8((v >> 56	) % 256));
-    	
+
     	return b;
     }
 }

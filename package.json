@@ -13,8 +13,6 @@
   },
   "devDependencies": {},
   "scripts": {
-    "naivePoW": "node naivePoW/main.js",
-    "testnet": "node testnet/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
