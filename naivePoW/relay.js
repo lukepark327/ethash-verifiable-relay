@@ -12,11 +12,11 @@ const Web3 = require("web3"); // npm install web3@0.19
 // See https://github.com/twodude/eth-proof-sol/issues/2
 // TODO: Get HttpProvider info from cli arguments.
 const to = new Web3();
-const provider_testnet = "http://147.46.116.57:8333" // testnet
+const provider_testnet = "http://localhost:8333" // testnet
 to.setProvider(new to.providers.HttpProvider(provider_testnet));
 
 const from = new Web3();
-const provider_private = "http://147.46.116.57:8222" // private
+const provider_private = "http://localhost:8222" // private
 from.setProvider(new from.providers.HttpProvider(provider_private));
 
 function unlockAccount(web3, address, password) {
