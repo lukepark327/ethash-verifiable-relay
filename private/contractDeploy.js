@@ -1,6 +1,6 @@
 /*
-* Deploy contract on Ropsten testnet.
-* Relay Private blockchain whose consensus is naïve PoW.
+* Deploy contract on Private network.
+* Relay testnet blockchain whose consensus is Ethash.
 */
 
 "use strict";
@@ -9,7 +9,7 @@ const Web3 = require("web3"); // npm install web3@0.19
 
 const web3 = new Web3();
 // See https://github.com/twodude/eth-proof-sol/issues/2
-const provider = "http://147.46.116.57:8003" // testnet
+const provider = "http://147.46.116.57:8002" // private
 web3.setProvider(new web3.providers.HttpProvider(provider));
 
 // personal.unlockAccount(eth.accounts[0], "12341234");
@@ -91,7 +91,7 @@ function readConfig(jsonFileLoca) {
 }
 
 // main
-var     config          = readConfig("naivePoW/config.json");
+var     config          = readConfig("private/config.json");
 const   OWNER           = config.owner;
 const   GENESISBLOCK    = config.genesisBlock;
 
@@ -99,11 +99,11 @@ console.log("> Unlocking an account");
 unlockAccount(OWNER.address, OWNER.password);
 
 // console.log("> Get contracts info");
-// sh naivePoW/deps.sh
+// sh private/deps.sh
 const contractInfos = getABIandCode(
-    "naivePoW/contracts/RelayNaivePoW.json",    // jsonFileLoca
-    "RelayNaivePoW.sol",                        // solidityName
-    "RelayNaivePoW"                             // contractName
+    "private/contracts/RelayEthash.json",    // jsonFileLoca
+    "RelayEthash.sol",                        // solidityName
+    "RelayEthash"                             // contractName
 );
 const abi   = contractInfos.abi;
 const code  = contractInfos.code;
@@ -128,5 +128,5 @@ asyncDeploy(abi, code, OWNER.address, parameters).then(function (myContract) {
 
     // console.log(config);
     // Write file
-    fs.writeFileSync("naivePoW/config.json", JSON.stringify(config, null, 2));  
+    fs.writeFileSync("private/config.json", JSON.stringify(config, null, 2));  
 });

@@ -1,6 +1,6 @@
 /*
-* Deploy contract on Ropsten testnet.
-* Relay Private blockchain whose consensus is naïve PoW.
+* Deploy contract on Private network.
+* Relay testnet blockchain whose consensus is Ethash.
 */
 
 "use strict";
@@ -11,7 +11,7 @@ const Web3 = require("web3"); // npm install web3@0.19
 
 const web3 = new Web3();
 // See https://github.com/twodude/eth-proof-sol/issues/2
-const provider = "http://147.46.116.57:8002" // private
+const provider = "http://147.46.116.57:8003" // testnet
 web3.setProvider(new web3.providers.HttpProvider(provider));
 
 function readConfig(jsonFileLoca) {
@@ -22,7 +22,7 @@ function readConfig(jsonFileLoca) {
 
 // main
 getBlock(process.argv[2]).then(function(data) {
-    var config = readConfig("naivePoW/config.json");
+    var config = readConfig("private/config.json");
 
     var GENESIS = new Object();
     GENESIS.blockHash           = data[0];
@@ -30,7 +30,7 @@ getBlock(process.argv[2]).then(function(data) {
     GENESIS.rlpHeader           = data[2];
     config.genesisBlock = GENESIS;
 
-    fs.writeFileSync("naivePoW/config.json", JSON.stringify(config, null, 2));  
+    fs.writeFileSync("private/config.json", JSON.stringify(config, null, 2));  
 });
 
 async function getBlock(num) {

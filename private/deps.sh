@@ -1,4 +1,4 @@
 # sh ethash/deps.sh
-cd ethash/contracts
+cd private/contracts
 solc --combined-json abi,bin RelayEthash.sol > RelayEthash.json
 cd ../..

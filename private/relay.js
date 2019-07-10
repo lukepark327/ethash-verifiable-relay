@@ -1,6 +1,6 @@
 /*
-* Deploy contract on Ropsten testnet.
-* Relay Private blockchain whose consensus is naïve PoW.
+* Deploy contract on Private network.
+* Relay testnet blockchain whose consensus is Ethash.
 */
 
 "use strict";
@@ -12,14 +12,14 @@ const Web3 = require("web3"); // npm install web3@0.19
 // See https://github.com/twodude/eth-proof-sol/issues/2
 // TODO: Get HttpProvider info from cli arguments.
 // build/bin/geth console --datadir ./mydata/ --networkid 950327 --port 32222 --rpc --rpcport "8002" --rpcaddr "0.0.0.0" --rpccorsdomain "*" --rpcapi db,eth,net,web3,personal --nodiscover
-const to = new Web3();
+const from = new Web3();
 const provider_testnet = "http://147.46.116.57:8003" // testnet
-to.setProvider(new to.providers.HttpProvider(provider_testnet));
+from.setProvider(new from.providers.HttpProvider(provider_testnet));
 
 // build/bin/geth console --testnet --port 33333 --rpc --rpcport "8003" --rpcaddr "0.0.0.0" --rpccorsdomain "*" --rpcapi db,eth,net,web3,personal --allow-insecure-unlock
-const from = new Web3();
+const to = new Web3();
 const provider_private = "http://147.46.116.57:8002" // private
-from.setProvider(new from.providers.HttpProvider(provider_private));
+to.setProvider(new to.providers.HttpProvider(provider_private));
 
 function unlockAccount(web3, address, password) {
     // Unlock the coinbase account to make transactions out of it
@@ -55,15 +55,15 @@ function readConfig(jsonFileLoca) {
 }
 
 // main
-const config = readConfig("naivePoW/config.json");
+const config = readConfig("private/config.json");
 const OWNER = config.owner;
 const CONTRACT = config.contract;
 
 // console.log("> Get contracts info");
 const contractInfos = getABIandCode(
-    "naivePoW/contracts/RelayNaivePoW.json",    // jsonFileLoca
-    "RelayNaivePoW.sol",                        // solidityName
-    "RelayNaivePoW"                             // contractName
+    "private/contracts/RelayEthash.json",    // jsonFileLoca
+    "RelayEthash.sol",                        // solidityName
+    "RelayEthash"                             // contractName
 );
 const abi = contractInfos.abi;
 // const code = contractInfos.code;
