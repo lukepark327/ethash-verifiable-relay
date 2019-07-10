@@ -1,17 +1,16 @@
 pragma solidity ^0.5.0;
 
-import "../utils/RLPReader.sol";
-import "../utils/MerklePatriciaProof.sol";
+import "./RLPReader.sol";
+import "./MerklePatriciaProof.sol";
 
-contract RelayNaivePoW {
+contract RelayEthash {
     /*
-    *
+    * Verify private chain's block headers.
     */
 
     using RLPReader for RLPReader.RLPItem;
     using RLPReader for bytes;
 
-    // TODO: Add relayer's address field or mapping.
     struct BlockHeader {
         bytes32     parentHash;     // 0
         bytes32     uncleHash;      // 1
@@ -26,69 +25,88 @@ contract RelayNaivePoW {
         // uint64   gasUsed;        // 10
         uint        time;           // 11
         // bytes    extra;          // 12
-        bytes32     MixDigest;      // 13
+        bytes32     mixDigest;      // 13
         uint        nonce;          // 14
     }
 
     mapping (bytes32 => BlockHeader) public blocks;
     mapping (bytes32 => bytes32[]) internal uncles;
 
-    bytes32 public genesisBlockHash;
+    // bytes32 public genesisBlockHash;
+    uint genesisBlockNumber;
+    uint highestBlockNumber;
+
+    function getGenesisBlockNumber() public view returns (uint) {
+        return genesisBlockNumber;
+    }
+
+    function getHighestBlockNumber() public view returns (uint) {
+        return highestBlockNumber;
+    }
 
     // TODO: ownership
     constructor(
         bytes32             blockHash,
-        bytes32[] memory    UncleBlockHashes,
+        bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
-        *
+        * Set a genesis block header.
         */
 
-        BlockHeader memory header = parseBlockHeader(rlpHeader);
+        BlockHeader memory header;
+        bytes32 hashNoNonce;
+        (header, hashNoNonce) = parseBlockHeader(rlpHeader);
 
         blocks[blockHash] = header;
-        if (UncleBlockHashes.length != 0) {
-            uncles[header.uncleHash] = UncleBlockHashes;
+        if (uncleBlockHashes.length != 0) {
+            uncles[header.uncleHash] = uncleBlockHashes;
         }
 
-        genesisBlockHash = blockHash;
+        // genesisBlockHash = blockHash;
+        genesisBlockNumber = header.blockNumber;
+        highestBlockNumber = genesisBlockNumber;
     }
 
     function submitBlock(
         bytes32             blockHash,
         // bytes32             blockHashNoNonce,
-        bytes32[] memory    UncleBlockHashes,
+        bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
-        *
+        * Submit block headers.
         */
 
         // Verify BlockHash with RLP encoded data
         assert(blockHash == keccak256(rlpHeader));
 
-        BlockHeader memory header = parseBlockHeader(rlpHeader);
+        BlockHeader memory header;
+        bytes32 hashNoNonce;
+        (header, hashNoNonce) = parseBlockHeader(rlpHeader);
 
-        if (UncleBlockHashes.length != 0) {
+        if (uncleBlockHashes.length != 0) {
             // TODO: validation test of uncles
             // Require all uncles block header info.
             // Require hash validation check.
             // assert();
-
-            uncles[header.uncleHash] = UncleBlockHashes;
+            uncles[header.uncleHash] = uncleBlockHashes;
         }
 
-        // call VerifyHeader
-        assert(VerifyHeader(blockHash, header, true));
+        // Call VerifyHeader
+        assert(VerifyHeader(blockHash, header, true, hashNoNonce));
 
+        // Set highestBlockNumber
         blocks[blockHash] = header;
+        if (highestBlockNumber < header.blockNumber) {
+            highestBlockNumber = header.blockNumber;
+        }
     }
 
     // parse block header
     function parseBlockHeader(
         bytes memory rlpHeader) internal pure
-        returns (BlockHeader memory) {
+        returns (BlockHeader memory, bytes32) {
         /*
-        *
+        * rlpParser
         */
 
         // must convert to an rlpItem first!
@@ -107,10 +125,79 @@ contract RelayNaivePoW {
         // header.gasUsed      = uint64(ls[10].toUint());
         header.time         = ls[11].toUint();
         // header.extra        = ls[12].toBytes();
-        header.MixDigest    = ls[13].toBytes32();
+        header.mixDigest    = ls[13].toBytes32();
         header.nonce        = ls[14].toUint();
 
-        return header;
+        bytes32 hashNoNonce = HashNoNonce(ls);
+        return (header, hashNoNonce);
+    }
+
+    function HashNoNonce(
+        RLPReader.RLPItem[] memory ls
+        ) internal pure
+        returns (bytes32) {
+        
+        bytes memory rlpBytes;
+        for (uint i = 0; i < ls.length - 2; i++) {
+            // Except mixDigest, nonce
+            rlpBytes = concatenate(rlpBytes, ls[i].toRlpBytes());
+        }
+        
+        /*
+        * Get prefix
+        */
+        uint rlpLen = rlpBytes.length; // Number of half-bytes
+        uint prefix = 0xf7;
+        
+        uint tmp = rlpLen;
+        uint tmp2 = 0;
+        while (tmp > 0) {
+            tmp /= 16;
+            tmp2++;
+        }
+        prefix += (tmp2 + 1) / 2;
+        
+        bytes memory prefixHex = toHexString(prefix);
+        bytes memory rlpLenHex = toHexString(rlpLen);
+        return keccak256(concatenate(concatenate(prefixHex, rlpLenHex), rlpBytes));
+    }
+    
+    function concatenate(
+        bytes memory A,
+        bytes memory B) internal pure
+        returns (bytes memory) {
+        /*
+        * res = A + B
+        */
+        bytes memory res = new bytes(A.length + B.length);
+        
+        uint i;
+        for (i = 0; i < A.length; i++) {
+            res[i] = A[i];
+        }
+        
+        for (uint j = 0; j < B.length; j++) {
+            res[i + j] = B[j];
+        }
+        
+        return res;
+    }
+    
+    function toHexString(uint a) internal pure returns (bytes memory) {
+        uint count = 0;
+        uint b = a;
+        while (b != 0) {
+            count++;
+            b /= 16;
+        }
+        count = (count + 1) / 2;
+        bytes memory res = new bytes(count);
+        for (uint i=0; i<count; ++i) {
+            b = a % 256;
+            res[count - i - 1] = byte(uint8(b));
+            a /= 256;
+        }
+        return res;
     }
 
     function getUncleBlockHashes(
@@ -118,21 +205,9 @@ contract RelayNaivePoW {
         return uncles[blocks[blockHash].uncleHash];
     }
 
-    /*
-    function getStateRoot(bytes32 blockHash) public view returns (bytes32) {
-        return blocks[blockHash].stateRoot;
-    }
-    */
-
     function getTxRoot(bytes32 blockHash) public view returns (bytes32) {
         return blocks[blockHash].txRoot;
     }
-
-    /*
-    function getReceiptRoot(bytes32 blockHash) public view returns (bytes32) {
-        return blocks[blockHash].receiptRoot;
-    }
-    */
 
     function checkTxProof(
         bytes memory value,
@@ -144,30 +219,6 @@ contract RelayNaivePoW {
         return trieValue(value, path, parentNodes, txRoot);
     }
 
-    /*
-    function checkStateProof(
-        bytes memory value,
-        bytes32 blockHash,
-        bytes memory path,
-        bytes memory parentNodes
-    ) public view returns (bool) {
-        bytes32 stateRoot = blocks[blockHash].stateRoot;
-        return trieValue(value, path, parentNodes, stateRoot);
-    }
-    */
-
-    /*
-    function checkReceiptProof(
-        bytes memory value,
-        bytes32 blockHash,
-        bytes memory path,
-        bytes memory parentNodes
-    ) public view returns (bool) {
-        bytes32 receiptRoot = blocks[blockHash].receiptRoot;
-        return trieValue(value, path, parentNodes, receiptRoot);
-    }
-    */
-
     function trieValue(
         bytes memory value,
         bytes memory encodedPath,
@@ -176,8 +227,6 @@ contract RelayNaivePoW {
     ) internal pure returns (bool) {
         return MerklePatriciaProof.verify(value, encodedPath, parentNodes, root);
     }
-
-    // TODO: Save verifying function in other contracts.
 
     // There are some values.
     uint    MaxBig256               = 2 ** 256 - 1;
@@ -190,17 +239,18 @@ contract RelayNaivePoW {
     int     bigMinus99              = -99;
     int     DifficultyBoundDivisor  = 2048;
     int     MinimumDifficulty       = 131072;
-    uint    bombDelay               = 3000000; // 5000000; in Constantinople
+    uint    bombDelay               = 5000000;
     uint    bombDelayFromParent     = bombDelay - uint(big1);
     uint    expDiffPeriod           = 100000;
 
     function VerifyHeader(
         bytes32 blockHash,
         BlockHeader memory header,
-        bool seal) internal view
+        bool seal,
+        bytes32 hashNoNonce) internal view
         returns (bool) {
         /*
-        *
+        * Verify basic features of block header.
         */
 
         if (blocks[blockHash].parentHash != 0) {
@@ -211,20 +261,22 @@ contract RelayNaivePoW {
             revert("consensus.ErrUnknownAncestor");
         }
 
-        return verifyHeader(header, parent, false, seal);
+        return verifyHeader(header, parent, false, seal, hashNoNonce);
     }
 
     function verifyHeader(
         BlockHeader memory header,
         BlockHeader memory parent,
         bool uncle,
-        bool seal) internal view
+        bool seal,
+        bytes32 hashNoNonce) internal view
         returns (bool) {
         /*
-        *
+        * Verify advanced features of block header.
         */
 
         // Ensure that the header's extra-data section is of a reasonable size
+        // SKIP
 
         // Verify the header's timestamp
         if (uncle) {
@@ -236,13 +288,13 @@ contract RelayNaivePoW {
             // Skip consensus.ErrFutureBlock test
             // because relayer can upload past block header.
         }
+
         if (header.time <= parent.time) {
             revert("errZeroBlockTime");
         }
 
         // Verify the block's difficulty based in it's timestamp and parent's difficulty
         int expected = CalcDifficulty(header.time, parent);
-
         if (expected != int(header.difficulty)) {
             revert("invalid difficulty");
         }
@@ -254,7 +306,7 @@ contract RelayNaivePoW {
         }
 
         if (seal) {
-            if (!VerifySeal(header)) {
+            if (!VerifySeal(header, hashNoNonce)) {
                 revert();
             }
         }
@@ -267,7 +319,7 @@ contract RelayNaivePoW {
         BlockHeader memory parent
         ) internal view returns (int) {
         /*
-        *
+        * Calculating a valid current difficulty.
         */
 
         // Postulate Constantinople rule only.
@@ -315,12 +367,26 @@ contract RelayNaivePoW {
     }
 
     function VerifySeal(
-        BlockHeader memory header
+        BlockHeader memory header,
+        bytes32 hashNoNonce
         ) internal view returns (bool) {
         /*
-        * Main idea of verifying PoW
+        * Main idea of verifying PoW.
         */
-        // TODO: Ethash
-        return true;
+        
+
+        // Ensure that we have a valid difficulty for the block
+        if (header.difficulty <= 0) {
+            revert("errInvalidDifficulty");
+        }
+
+        // block.Ethash
+        return block.ethash(
+            header.blockNumber,
+            header.mixDigest,
+            hashNoNonce,
+            header.difficulty,
+            header.nonce
+        );
     }
 }

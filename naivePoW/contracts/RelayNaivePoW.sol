@@ -5,13 +5,12 @@ import "./MerklePatriciaProof.sol";
 
 contract RelayNaivePoW {
     /*
-    *
+    * Verify private chain's block headers.
     */
 
     using RLPReader for RLPReader.RLPItem;
     using RLPReader for bytes;
 
-    // TODO: Add relayer's address field or mapping.
     struct BlockHeader {
         bytes32     parentHash;     // 0
         bytes32     uncleHash;      // 1
@@ -51,7 +50,7 @@ contract RelayNaivePoW {
         bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
-        *
+        * Set a genesis block header.
         */
 
         BlockHeader memory header = parseBlockHeader(rlpHeader);
@@ -72,7 +71,7 @@ contract RelayNaivePoW {
         bytes32[] memory    uncleBlockHashes,
         bytes memory        rlpHeader) public {
         /*
-        *
+        * Submit block headers.
         */
 
         // Verify BlockHash with RLP encoded data
@@ -85,13 +84,13 @@ contract RelayNaivePoW {
             // Require all uncles block header info.
             // Require hash validation check.
             // assert();
-
             uncles[header.uncleHash] = uncleBlockHashes;
         }
 
-        // call VerifyHeader
+        // Call VerifyHeader
         assert(VerifyHeader(blockHash, header, true));
 
+        // Set highestBlockNumber
         blocks[blockHash] = header;
         if (highestBlockNumber < header.blockNumber) {
             highestBlockNumber = header.blockNumber;
@@ -103,7 +102,7 @@ contract RelayNaivePoW {
         bytes memory rlpHeader) internal pure
         returns (BlockHeader memory) {
         /*
-        *
+        * rlpParser
         */
 
         // must convert to an rlpItem first!
@@ -133,21 +132,9 @@ contract RelayNaivePoW {
         return uncles[blocks[blockHash].uncleHash];
     }
 
-    /*
-    function getStateRoot(bytes32 blockHash) public view returns (bytes32) {
-        return blocks[blockHash].stateRoot;
-    }
-    */
-
     function getTxRoot(bytes32 blockHash) public view returns (bytes32) {
         return blocks[blockHash].txRoot;
     }
-
-    /*
-    function getReceiptRoot(bytes32 blockHash) public view returns (bytes32) {
-        return blocks[blockHash].receiptRoot;
-    }
-    */
 
     function checkTxProof(
         bytes memory value,
@@ -159,30 +146,6 @@ contract RelayNaivePoW {
         return trieValue(value, path, parentNodes, txRoot);
     }
 
-    /*
-    function checkStateProof(
-        bytes memory value,
-        bytes32 blockHash,
-        bytes memory path,
-        bytes memory parentNodes
-    ) public view returns (bool) {
-        bytes32 stateRoot = blocks[blockHash].stateRoot;
-        return trieValue(value, path, parentNodes, stateRoot);
-    }
-    */
-
-    /*
-    function checkReceiptProof(
-        bytes memory value,
-        bytes32 blockHash,
-        bytes memory path,
-        bytes memory parentNodes
-    ) public view returns (bool) {
-        bytes32 receiptRoot = blocks[blockHash].receiptRoot;
-        return trieValue(value, path, parentNodes, receiptRoot);
-    }
-    */
-
     function trieValue(
         bytes memory value,
         bytes memory encodedPath,
@@ -191,8 +154,6 @@ contract RelayNaivePoW {
     ) internal pure returns (bool) {
         return MerklePatriciaProof.verify(value, encodedPath, parentNodes, root);
     }
-
-    // TODO: Save verifying function in other contracts.
 
     // There are some values.
     uint    MaxBig256               = 2 ** 256 - 1;
@@ -215,7 +176,7 @@ contract RelayNaivePoW {
         bool seal) internal view
         returns (bool) {
         /*
-        *
+        * Verify basic features of block header.
         */
 
         if (blocks[blockHash].parentHash != 0) {
@@ -236,10 +197,11 @@ contract RelayNaivePoW {
         bool seal) internal view
         returns (bool) {
         /*
-        *
+        * Verify advanced features of block header.
         */
 
         // Ensure that the header's extra-data section is of a reasonable size
+        // SKIP
 
         // Verify the header's timestamp
         if (uncle) {
@@ -251,13 +213,13 @@ contract RelayNaivePoW {
             // Skip consensus.ErrFutureBlock test
             // because relayer can upload past block header.
         }
+
         if (header.time <= parent.time) {
             revert("errZeroBlockTime");
         }
 
         // Verify the block's difficulty based in it's timestamp and parent's difficulty
         int expected = CalcDifficulty(header.time, parent);
-
         if (expected != int(header.difficulty)) {
             revert("invalid difficulty");
         }
@@ -282,7 +244,7 @@ contract RelayNaivePoW {
         BlockHeader memory parent
         ) internal view returns (int) {
         /*
-        *
+        * Calculating a valid current difficulty.
         */
 
         // Postulate Constantinople rule only.
@@ -333,7 +295,7 @@ contract RelayNaivePoW {
         BlockHeader memory header
         ) internal view returns (bool) {
         /*
-        * Main idea of verifying PoW
+        * Main idea of verifying PoW.
         */
 
         // Ensure that we have a valid difficulty for the block
@@ -342,8 +304,7 @@ contract RelayNaivePoW {
         }
 
         // Recompute the digest and PoW value and verify against the header
-        // naïve PoW
-        bytes32 hashNoNonce = header.mixDigest;
+        bytes32 hashNoNonce = header.mixDigest; // naïve PoW
 
         bytes32 digest;
         bytes32 result;
@@ -370,17 +331,17 @@ contract RelayNaivePoW {
 
     	// Combine header+nonce into a 64 byte seed
         bytes memory seed = new bytes(72);
-        for (uint8 i=0; i<32; i++) {
+        for (uint8 i = 0; i < 32; i++) {
             seed[i] = digest[i];
         }
 
         // binary.LittleEndian.PutUint64(seed[32:], nonce)
         bytes memory nonceBytes = PutUint64(uint64(nonce));
 
-        for (uint8 i=32; i<40; i++) {
+        for (uint8 i = 32; i < 40; i++) {
             seed[i] = nonceBytes[i-32];
         }
-        for (uint8 i=40; i<72; i++) {
+        for (uint8 i = 40; i < 72; i++) {
             seed[i] = digest[i-40];
         }
         return (digest, keccak256(seed));
@@ -390,17 +351,17 @@ contract RelayNaivePoW {
         uint64 v
         ) internal pure returns (bytes memory) {
         /*
-        *
+        * uint64 to bytes(8).
         */
         bytes memory b = new bytes(8);
-    	b[0] = byte(uint8((v		) % 256));
-    	b[1] = byte(uint8((v >> 8	) % 256));
-    	b[2] = byte(uint8((v >> 16	) % 256));
-    	b[3] = byte(uint8((v >> 24	) % 256));
-    	b[4] = byte(uint8((v >> 32	) % 256));
-    	b[5] = byte(uint8((v >> 40	) % 256));
-    	b[6] = byte(uint8((v >> 48	) % 256));
-    	b[7] = byte(uint8((v >> 56	) % 256));
+    	b[0] = byte(uint8(v		 ));
+    	b[1] = byte(uint8(v >> 8 ));
+    	b[2] = byte(uint8(v >> 16));
+    	b[3] = byte(uint8(v >> 24));
+    	b[4] = byte(uint8(v >> 32));
+    	b[5] = byte(uint8(v >> 40));
+    	b[6] = byte(uint8(v >> 48));
+    	b[7] = byte(uint8(v >> 56));
 
     	return b;
     }
