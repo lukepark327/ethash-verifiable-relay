@@ -13,12 +13,12 @@ const Web3 = require("web3"); // npm install web3@0.19
 // TODO: Get HttpProvider info from cli arguments.
 // build/bin/geth console --datadir ./mydata/ --networkid 950327 --port 32222 --rpc --rpcport "8002" --rpcaddr "0.0.0.0" --rpccorsdomain "*" --rpcapi db,eth,net,web3,personal --nodiscover
 const from = new Web3();
-const provider_testnet = "http://147.46.116.57:8003" // testnet
+const provider_testnet = "http://localhost:8003" // testnet
 from.setProvider(new from.providers.HttpProvider(provider_testnet));
 
 // build/bin/geth console --testnet --port 33333 --rpc --rpcport "8003" --rpcaddr "0.0.0.0" --rpccorsdomain "*" --rpcapi db,eth,net,web3,personal --allow-insecure-unlock
 const to = new Web3();
-const provider_private = "http://147.46.116.57:8002" // private
+const provider_private = "http://localhost:8002" // private
 to.setProvider(new to.providers.HttpProvider(provider_private));
 
 function unlockAccount(web3, address, password) {

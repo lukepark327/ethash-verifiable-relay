@@ -9,7 +9,7 @@ const Web3 = require("web3"); // npm install web3@0.19
 
 const web3 = new Web3();
 // See https://github.com/twodude/eth-proof-sol/issues/2
-const provider = "http://147.46.116.57:8002" // private
+const provider = "http://localhost:8002" // private
 web3.setProvider(new web3.providers.HttpProvider(provider));
 
 // personal.unlockAccount(eth.accounts[0], "12341234");
